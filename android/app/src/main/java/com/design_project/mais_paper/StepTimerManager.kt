@@ -41,20 +41,34 @@ class StepTimerManager(
         val step = steps[index]
         currentElapsed = 0L
 
-        if (step.waitForUser) {
-            onWaitForUser(step.name)
-            return // Wait for external call to continueAfterUserAction()
-        }
+        timer = Timer()
+        timer?.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                currentElapsed += 1000
+                onStepUpdate(step.name, currentElapsed, step.durationMillis)
 
-        startTimer(step)
+                if (currentElapsed >= step.durationMillis) {
+                    timer?.cancel()
+                    step.onNotify?.invoke()
+                    onStepComplete(step.name)
+
+                    // Wait for user if needed before proceeding
+                    if (step.waitForUser) {
+                        onWaitForUser(step.name) // Show message to tap "Continue"
+                    } else {
+                        if (index + 1 < steps.size) {
+                            runStep(index + 1)
+                        }
+                    }
+                }
+            }
+        }, 0, 1000)
     }
 
+
     fun continueAfterUserAction() {
-        if (currentStepIndex < steps.size) {
-            val step = steps[currentStepIndex]
-            if (step.waitForUser) {
-                startTimer(step)
-            }
+        if (currentStepIndex + 1 < steps.size) {
+            runStep(currentStepIndex + 1)
         }
     }
 
