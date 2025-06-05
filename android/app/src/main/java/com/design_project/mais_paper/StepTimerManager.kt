@@ -17,15 +17,7 @@ class StepTimerManager(
         if (steps.isNotEmpty()) runStep(currentStepIndex)
     }
 
-    private fun runStep(index: Int) {
-        val step = steps[index]
-        currentElapsed = 0L
-
-        if (step.waitForUser) {
-            onWaitForUser(step.name)
-            return
-        }
-
+    private fun startTimer(step: ProcessStep) {
         timer = Timer()
         timer?.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
@@ -36,16 +28,33 @@ class StepTimerManager(
                     timer?.cancel()
                     step.onNotify?.invoke()
                     onStepComplete(step.name)
-                    if (index + 1 < steps.size) runStep(index + 1)
+                    if (currentStepIndex + 1 < steps.size) {
+                        runStep(currentStepIndex + 1)
+                    }
                 }
             }
         }, 0, 1000)
     }
 
+    private fun runStep(index: Int) {
+        currentStepIndex = index
+        val step = steps[index]
+        currentElapsed = 0L
+
+        if (step.waitForUser) {
+            onWaitForUser(step.name)
+            return // Wait for external call to continueAfterUserAction()
+        }
+
+        startTimer(step)
+    }
+
     fun continueAfterUserAction() {
         if (currentStepIndex < steps.size) {
-            currentStepIndex++
-            runStep(currentStepIndex)
+            val step = steps[currentStepIndex]
+            if (step.waitForUser) {
+                startTimer(step)
+            }
         }
     }
 

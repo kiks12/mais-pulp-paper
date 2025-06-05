@@ -17,18 +17,20 @@ class TimerService : Service() {
 
     lateinit var stepManager : StepTimerManager
     private val steps = listOf(
-        ProcessStep("Grinding", 15_000),
-        ProcessStep("Boiling", 15_000, onNotify = {
+        ProcessStep("Grinding", 5_000), // 15_000
+        ProcessStep("Boiling", 5_000, onNotify = { // 15 * 60_000
             sendNotification("Boiling Done", "Please open boiling lid")
             Log.w(TAG, "Open boiling lid")
         }, waitForUser = true),
-        ProcessStep("Auger Feeder", 20_000),
-        ProcessStep("Pulping", 60_000, onNotify = {
+        ProcessStep("Auger Feeder", 5_000), // 20_000
+        ProcessStep("Pulping", 5_000, onNotify = { // 60_000
             sendNotification("Pulping Done", "Please open pulping lid")
             Log.w(TAG, "Open pulping lid")
         }, waitForUser = true),
-        ProcessStep("Conveyor", 30_000),
-        ProcessStep("Drying", 15 * 60_000)
+        ProcessStep("Conveyor", 5_000), // 30_000
+        ProcessStep("Drying", 5_000, onNotify = {
+            ProcessUpdate.doneFlag.postValue(true)
+        }) // 15 * 60_000
     )
 
 
@@ -47,6 +49,37 @@ class TimerService : Service() {
                 val text = "$name: ${elapsed/1000}s / ${total/1000}s"
                 ProcessUpdate.text.postValue(text)
                 Log.d(TAG, text)
+
+                when (name) {
+                    "Grinding" -> {
+                        ProcessUpdate.grindingCurrentValue.postValue(elapsed/1000)
+                        ProcessUpdate.grindingMaxValue.postValue(total/1000)
+                    }
+                    "Boiling" -> {
+                        ProcessUpdate.boilingCurrentValue.postValue(elapsed/1000)
+                        ProcessUpdate.boilingMaxValue.postValue(total/1000)
+                    }
+                    "Auger Feeder" -> {
+                        ProcessUpdate.augerCurrentValue.postValue(elapsed/1000)
+                        ProcessUpdate.augerMaxValue.postValue(total/1000)
+                    }
+                    "Pulping" -> {
+                        ProcessUpdate.pulpingCurrentValue.postValue(elapsed/1000)
+                        ProcessUpdate.pulpingMaxValue.postValue(total/1000)
+                    }
+                    "Conveyor" -> {
+                        ProcessUpdate.conveyorCurrentValue.postValue(elapsed/1000)
+                        ProcessUpdate.conveyorMaxValue.postValue(total/1000)
+                    }
+                    "Drying" -> {
+                        ProcessUpdate.dryingCurrentValue.postValue(elapsed/1000)
+                        ProcessUpdate.dryingMaxValue.postValue(total/1000)
+                    }
+                    else -> {
+                        ProcessUpdate.current.postValue(elapsed/1000)
+                        ProcessUpdate.maxValue.postValue(total/1000)
+                    }
+                }
             },
             onStepComplete = { name ->
                 val text = "$name complete"
@@ -64,7 +97,7 @@ class TimerService : Service() {
     }
 
 
-    override fun onBind(intent: Intent?): IBinder? {
+    override fun onBind(intent: Intent?): IBinder {
         return LocalBinder()
     }
 
@@ -107,10 +140,5 @@ class TimerService : Service() {
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
         }
-    }
-
-
-    override fun onDestroy() {
-        super.onDestroy()
     }
 }

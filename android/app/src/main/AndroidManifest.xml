@@ -16,6 +16,9 @@
         android:theme="@style/Theme.Mais_pulp_paper"
         tools:targetApi="31">
         <activity
+            android:name=".HistoryActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
@@ -27,7 +30,9 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".services.TimerService" android:foregroundServiceType="specialUse"/>
+        <service
+            android:name=".services.TimerService"
+            android:foregroundServiceType="specialUse" />
     </application>
 
 </manifest>
