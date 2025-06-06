@@ -1,5 +1,6 @@
 package com.design_project.mais_paper
 
+import com.design_project.mais_paper.websocket.AppWebSocketManager
 import java.util.Timer
 import java.util.TimerTask
 
@@ -17,30 +18,12 @@ class StepTimerManager(
         if (steps.isNotEmpty()) runStep(currentStepIndex)
     }
 
-    private fun startTimer(step: ProcessStep) {
-        timer = Timer()
-        timer?.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                currentElapsed += 1000
-                onStepUpdate(step.name, currentElapsed, step.durationMillis)
-
-                if (currentElapsed >= step.durationMillis) {
-                    timer?.cancel()
-                    step.onNotify?.invoke()
-                    onStepComplete(step.name)
-                    if (currentStepIndex + 1 < steps.size) {
-                        runStep(currentStepIndex + 1)
-                    }
-                }
-            }
-        }, 0, 1000)
-    }
-
     private fun runStep(index: Int) {
         currentStepIndex = index
         val step = steps[index]
         currentElapsed = 0L
 
+        AppWebSocketManager.send("mobile-data: ${step.name}")
         timer = Timer()
         timer?.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {

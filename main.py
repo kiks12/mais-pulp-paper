@@ -49,7 +49,7 @@ def pulper_process(duration=60):
         # pulper.off()
         print("\nPulper process complete. open the lid manually")
 
-    conveyor_process()
+    # conveyor_process()
 
 
 def conveyor_process(duration=30):
@@ -64,7 +64,7 @@ def conveyor_process(duration=30):
         print("\nConveyor motor stopped.")
 
     # After first conveyor run, start heater
-    heater_process()
+    # heater_process()
 
 
 def heater_process(duration=180):
@@ -111,7 +111,7 @@ def motor_breaker_process(duration=20):
         # motor_breaker.off()
         print("\nMotor breaker stopped.")
 
-    pulper_process()
+    # pulper_process()
 
 
 def boiling_process(duration=10):
@@ -125,7 +125,7 @@ def boiling_process(duration=10):
         # boiler.off()
         print("\nBoiling stopped. open the lid manually")
 
-    motor_breaker_process()
+    # motor_breaker_process()
 
 
 def grinder_process(duration=20):
@@ -148,27 +148,19 @@ def grinder_process(duration=20):
         # grinder.off()
         print("\nGrinder stopped.")
 
-    boiling_process()
+    # boiling_process()
 
 
 def ir_detected_none():
     print(">> IR Sensor Not detecting")
     if server:
-        server.send_message_to_all("ir-data: true")
+        server.send_message_to_all("ir-data: false")
 
 
 def ir_detected():
     print(">> IR Sensor Triggered")
     if server:
         server.send_message_to_all("ir-data: true")
-
-    # HIWALAY NA TO
-    # if not cycle_running.is_set():
-    #     print(">> Starting new process thread")
-    #     thread = Thread(target=grinder_process)
-    #     thread.start()
-    # else:
-    #     print(">> Cycle already running; ignoring this detection")
 
 
 def start_grinder_process():
@@ -181,10 +173,27 @@ def start_grinder_process():
 
 
 def ws_message_received(client, server, message):
-    if "mobile-data: start-grinder":
+    print("RECEIVED MESSAGE:", message)
+
+    server.send_message_to_all(message)
+
+    if message == "mobile-data: start-grinder":
         print(">>> START GRINDER")
         start_grinder_process()
-    print(message)
+    if message == "mobile-data: start-boiler":
+        print(">>> START BOILER")
+        boiling_process()
+    if message == "mobile-data: start-motor-breaker":
+        print(">>> START MOTOR BREAKER")
+        motor_breaker_process()
+    if message == "mobile-data: start-pulper":
+        print(">>> START PULPER")
+        pulper_process()
+    if message == "mobile-data: start-conveyor":
+        print(">>> START CONVEYOR")
+        conveyor_process()
+    if message == "mobile-data: start-drying":
+        print(">>> START DRYING")
 
 
 # WEBSOCKET SETUP

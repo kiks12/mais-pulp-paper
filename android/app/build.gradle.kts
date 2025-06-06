@@ -83,7 +83,6 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1") // for coroutines
 
-//    implementation("com.github.tehras:charts:0.2.3")
-//    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
-
+    implementation ("io.github.ehsannarmani:compose-charts:0.1.7")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0") // Use latest
 }
