@@ -7,15 +7,15 @@ import sys
 import time
 
 # Devices setup (all assumed active LOW except boiler)
-# grinder = DigitalOutputDevice(27, active_high=False, initial_value=False)
-# boiler = DigitalOutputDevice(22, active_high=False, initial_value=False)
-# motor_breaker = DigitalOutputDevice(23, active_high=False, initial_value=False)
-# pulper = DigitalOutputDevice(24, active_high=False, initial_value=False)
-# conveyor_motor = DigitalOutputDevice(
-#     25, active_high=False, initial_value=False)
-# heater = DigitalOutputDevice(
-#     5, active_high=False, initial_value=False)  # Heater pin setup
-# ir_sensor = DigitalInputDevice(17)
+grinder = DigitalOutputDevice(27, active_high=False, initial_value=False)
+boiler = DigitalOutputDevice(22, active_high=False, initial_value=False)
+motor_breaker = DigitalOutputDevice(23, active_high=False, initial_value=False)
+pulper = DigitalOutputDevice(24, active_high=False, initial_value=False)
+conveyor_motor = DigitalOutputDevice(
+    25, active_high=False, initial_value=False)
+heater = DigitalOutputDevice(
+    5, active_high=False, initial_value=False)  # Heater pin setup
+ir_sensor = DigitalInputDevice(17)
 
 cycle_running = Event()
 
@@ -25,12 +25,12 @@ server = None
 
 def shutdown_all_devices():
     print("\nShutting down... turning all components OFF.")
-    # grinder.off()
-    # boiler.off()
-    # motor_breaker.off()
-    # pulper.off()
-    # conveyor_motor.off()
-    # heater.off()
+    grinder.off()
+    boiler.off()
+    motor_breaker.off()
+    pulper.off()
+    conveyor_motor.off()
+    heater.off()
 
 
 def shutdown_handler(*args):
@@ -41,12 +41,12 @@ def shutdown_handler(*args):
 def pulper_process(duration=60):
     print(f"\nStarting pulper for {duration} seconds...")
     try:
-        # pulper.on()
+        pulper.on()
         for remaining in range(duration, 0, -1):
             print(f"Pulper time left: {remaining} seconds", end='\r')
             time.sleep(1)
     finally:
-        # pulper.off()
+        pulper.off()
         print("\nPulper process complete. open the lid manually")
 
     # conveyor_process()
@@ -55,12 +55,12 @@ def pulper_process(duration=60):
 def conveyor_process(duration=30):
     print(f"Starting conveyor motor for {duration} seconds...")
     try:
-        # conveyor_motor.on()
+        conveyor_motor.on()
         for remaining in range(duration, 0, -1):
             print(f"Conveyor time left: {remaining} seconds", end='\r')
             time.sleep(1)
     finally:
-        # conveyor_motor.off()
+        conveyor_motor.off()
         print("\nConveyor motor stopped.")
 
     # After first conveyor run, start heater
@@ -70,16 +70,16 @@ def conveyor_process(duration=30):
 def heater_process(duration=180):
     print(f"Starting heater for {duration} seconds...")
     try:
-        # heater.on()
+        heater.on()
         for remaining in range(duration, 0, -1):
             print(f"Heater time left: {remaining} seconds", end='\r')
             time.sleep(1)
     finally:
-        # heater.off()
+        heater.off()
         print("\nHeater stopped.")
 
     # After heater finishes, run conveyor AGAIN for 60 seconds
-    conveyor_process_after_heater()
+    # conveyor_process_after_heater()
 
 
 def conveyor_process_after_heater(duration=60):
@@ -103,12 +103,12 @@ def conveyor_process_after_heater(duration=60):
 def motor_breaker_process(duration=20):
     print(f"Starting motor breaker for {duration} seconds...")
     try:
-        # motor_breaker.on()
+        motor_breaker.on()
         for remaining in range(duration, 0, -1):
             print(f"Motor breaker time left: {remaining} seconds", end='\r')
             time.sleep(1)
     finally:
-        # motor_breaker.off()
+        motor_breaker.off()
         print("\nMotor breaker stopped.")
 
     # pulper_process()
@@ -117,12 +117,12 @@ def motor_breaker_process(duration=20):
 def boiling_process(duration=10):
     print(f"Starting boiling for {duration} seconds...")
     try:
-        # boiler.on()
+        boiler.on()
         for remaining in range(duration, 0, -1):
             print(f"Boiling time left: {remaining} seconds", end='\r')
             time.sleep(1)
     finally:
-        # boiler.off()
+        boiler.off()
         print("\nBoiling stopped. open the lid manually")
 
     # motor_breaker_process()
@@ -140,12 +140,12 @@ def grinder_process(duration=20):
 
     try:
         print(f"Starting grinder for {duration} seconds...")
-        # grinder.on()
+        grinder.on()
         for remaining in range(duration, 0, -1):
             print(f"Grinding time left: {remaining} seconds", end='\r')
             time.sleep(1)
     finally:
-        # grinder.off()
+        grinder.off()
         print("\nGrinder stopped.")
 
     # boiling_process()
@@ -209,8 +209,8 @@ def start_websocket():
 
 def main():
     signal(SIGINT, shutdown_handler)
-    # ir_sensor.when_activated = ir_detected
-    # ir_sensor.when_deactivated = ir_detected_none
+    ir_sensor.when_activated = ir_detected
+    ir_sensor.when_deactivated = ir_detected_none
 
     print("Starting websocket...")
     websocket_thread = Thread(target=start_websocket)
