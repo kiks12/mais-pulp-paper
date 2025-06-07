@@ -21,9 +21,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -31,6 +33,9 @@ import androidx.lifecycle.MutableLiveData
 import com.design_project.mais_paper.services.TimerService
 import com.design_project.mais_paper.ui.theme.Mais_pulp_paperTheme
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,12 +45,8 @@ import com.design_project.mais_paper.room.AppDatabase
 import com.design_project.mais_paper.room.PaperCycleDao
 import com.design_project.mais_paper.room.PaperCycleRepository
 import com.design_project.mais_paper.websocket.AppWebSocketManager
-import com.design_project.mais_paper.websocket.DefaultWebSocketManager
-import com.design_project.mais_paper.websocket.WebSocketListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
-import okhttp3.Request
 
 class MainActivity : ComponentActivity() {
 
@@ -77,10 +78,6 @@ class MainActivity : ComponentActivity() {
         startActivity(intent)
     }
 
-    private fun reconnectWebSocket() {
-        AppWebSocketManager.connect()
-    }
-
     @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -107,6 +104,7 @@ class MainActivity : ComponentActivity() {
             val dryingMaxValue by ProcessUpdate.dryingMaxValue.observeAsState()
 
             val connected by AppWebSocketManager.isConnected.observeAsState(false)
+            var url by remember { mutableStateOf("") }
 
             Mais_pulp_paperTheme {
                 NotificationPermissionRequest()
@@ -180,9 +178,15 @@ class MainActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ){
-                        Text(text = "Error!", fontWeight = FontWeight.Black, fontSize = 40.sp)
-                        Text(text = "Not connected to websocket")
-                        Button(onClick = ::reconnectWebSocket, modifier = Modifier.padding(top = 16.dp)) {
+                        Text(text = "500", fontWeight = FontWeight.Black, fontSize = 80.sp)
+                        Text(text = "Not connected to websocket. Please enter websocket url")
+                        OutlinedTextField(
+                            modifier = Modifier.padding(top = 16.dp),
+                            label = { Text("Websocket Server URL") },
+                            value = url,
+                            onValueChange = { url = it }
+                        )
+                        Button(onClick = { AppWebSocketManager.init(url) }, modifier = Modifier.padding(top = 16.dp)) {
                             Text(text = "Connect")
                         }
                     }
