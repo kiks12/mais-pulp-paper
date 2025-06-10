@@ -23,7 +23,7 @@ class TimerService : Service() {
             Log.w(TAG, "Open boiling lid")
         }, waitForUser = true),
         ProcessStep("Auger Feeder", 20_000), // 20_000
-        ProcessStep("Pulping", 6_000, onNotify = { // 60_000
+        ProcessStep("Pulping", 60_000, onNotify = { // 60_000
             sendNotification("Pulping Done", "Please open pulping lid")
             Log.w(TAG, "Open pulping lid")
         }, waitForUser = true),
